@@ -1,0 +1,4 @@
+pysimplegui
+pytesseract
+opencv-python
+pdf2image
