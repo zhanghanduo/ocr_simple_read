@@ -111,7 +111,7 @@ def ocr_image(pdfs, prefix):
         im = pages[0]
         area1 = (2172, 771, 2498, 905)
         part1 = im.crop(area1)
-        area2 = (371, 943, 1800, 1081)
+        area2 = (363, 920, 1880, 1081)
         part2 = im.crop(area2)  
 
         options1 = "--psm 7 -c tessedit_char_blacklist=\/:*<>|?!"
