@@ -13,7 +13,6 @@ else:
     from pathlib import Path
 
 from pdf2image import convert_from_path
-import cv2
 import pytesseract
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
@@ -104,29 +103,33 @@ def ocr_image(pdfs, prefix):
     new_name_list = []
 
     for pdf in pdfs:
-        file_name = os.path.basename(pdf)
+        # file_name = os.path.basename(pdf)
         pages = convert_from_path(pdf_path=pdf, dpi=350)
 
-        image_name = "Page2_" + os.path.splitext(file_name)[0]+'.jpg'
-        pages[0].save(image_name, "JPEG")
-        im = cv2.imread(image_name)
-        part1 = im[786:887, 2200:2455]
-        part2 = im[954:1022, 376:1872]
-        # ret, thresh2 = cv2.threshold(part2, 120, 255, cv2.THRESH_BINARY)
+        # image_name = "Page2_" + os.path.splitext(file_name)[0]+'.jpg'
+        # pages[0].save(image_name, "JPEG")
+        im = pages[0]
+        area1 = (2172, 771, 2498, 905)
+        part1 = im.crop(area1)
+        area2 = (371, 943, 1800, 1081)
+        part2 = im.crop(area2)  
 
-        part1_str = str(pytesseract.image_to_string(part1, config='--psm 7')).strip()
-        part2_str = str(pytesseract.image_to_string(part2, config='--psm 7')).strip()
+        options1 = "--psm 7 -c tessedit_char_blacklist=\/:*<>|?!"
+        options2 = "--psm 6 -c tessedit_char_blacklist=\/:*<>|?!"
+
+        part1_str = str(pytesseract.image_to_string(part1, config=options1)).strip()
+        part2_str = str(pytesseract.image_to_string(part2, config=options2)).partition('\n')[0].strip()
         new_name_list.append(part1_str + ' - ' + part2_str + '.pdf')
-
+        # print(part1_str)
+        # print(part2_str)
         copy(pdf, prefix)
-        os.remove(image_name)
         index += 1
         progress_bar.update_bar(index, max_row)
 
     os.chdir(prefix)
     for i, pdf in enumerate(pdfs):
         os.rename(pdf, new_name_list[i])
-        
+    index += 1
 
     status = 5
     index = 0
@@ -143,7 +146,7 @@ def read_data(infolder):
     for file in glob.glob("*.pdf"):
         print(file)
         pdf_data.append(file)
-    max_row = len(pdf_data)
+    max_row = len(pdf_data) + 1
     if max_row ==0:
          sg.popup_error('没有发现PDF文件')
     else:
